@@ -6,11 +6,14 @@ beautifulsoup4==4.13.5
 bs4==0.0.2
 certifi==2025.8.3
 charset-normalizer==3.4.3
+dnspython==2.8.0
 frozenlist==1.7.0
 idna==3.10
 lxml==6.0.1
+motor==3.7.1
 multidict==6.6.4
 propcache==0.3.2
+pymongo==4.15.1
 soupsieve==2.8
 tqdm==4.67.1
 typing_extensions==4.15.0
