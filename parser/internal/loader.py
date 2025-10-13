@@ -3,7 +3,7 @@ import aiohttp
 import sys
 from tqdm import tqdm
 
-from internal.documents import parse_document
+from internal.documents import Document
 from internal.sitemap import SitemapFetcher
 from internal.storage import StorageManager
 
@@ -92,7 +92,7 @@ class PageDownloader:
                 if resp.status == 200:
                     html = await resp.text()
                     try:
-                        doc = parse_document(url, html)
+                        doc = Document(url, html)
 
                         await self.storage.save(doc)
 

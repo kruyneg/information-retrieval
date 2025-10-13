@@ -8,7 +8,7 @@ from internal.sitemap import SitemapFetcher
 
 def parse_program_args():
     parser = argparse.ArgumentParser(
-        description="Парсер статей для сайтов с sitemap.xml")
+        description="Загрузчик статей для сайтов с sitemap.xml")
     parser.add_argument("-w", "--workers",
                         type=int, default=4, help="Количество потоков")
     parser.add_argument("-u", "--mongo-url",

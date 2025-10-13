@@ -1,6 +1,19 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
+from time import time
+from urllib.parse import urlparse
 
+
+@dataclass
+class Document:
+    url: str
+    html: str
+    created_at: float = field(default_factory=lambda: time())
+    site: str = field(init=False)
+
+    def __post_init__(self):
+        self.site = urlparse(self.url).netloc
+        
 
 @dataclass
 class HabrDocument:

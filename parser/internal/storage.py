@@ -3,7 +3,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from dataclasses import asdict
 from tqdm import tqdm
 
-from internal.documents import HabrDocument, GeeksDocument
+from internal.documents import Document
 
 
 class StorageManager:
@@ -24,7 +24,7 @@ class StorageManager:
         self.on_limit_reached = None
         self._count = 0
 
-    async def save(self, doc: HabrDocument | GeeksDocument):
+    async def save(self, doc: Document):
         if self._limit_is_reached():
             return
 
