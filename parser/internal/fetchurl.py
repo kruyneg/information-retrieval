@@ -2,6 +2,8 @@ from urllib.robotparser import RobotFileParser
 import aiohttp
 from lxml import etree
 
+from internal.storage import StorageManager
+
 
 IGNORE_LIST = [
     "https://www.geeksforgeeks.org/category/category-sitemap-1.xml",
@@ -51,20 +53,25 @@ class RobotManager:
         return self.crawl_delay
 
 
-class SitemapFetcher:
-    def __init__(self, url: str, user_agent: str = "SimpleCrawler"):
+class UrlFetcher:
+    def __init__(self, url: str, storage: StorageManager | None = None,
+                 user_agent: str = "SimpleCrawler"):
         self.base_url = url.rstrip("/")
         self._robot_manager = RobotManager(url, user_agent)
-    
+        self.mongo = storage
+
     def get_delay(self) -> int:
         return self._robot_manager.get_delay()
 
     async def urls(self):
         await self._robot_manager.load()
+        last_url = None
+        if self.mongo is not None:
+            last_url = await self.mongo.get_last_url(self.base_url)
 
         sitemaps = self._robot_manager.get_sitemaps()
         for sm_url in sitemaps:
-            async for url in self._parse_sitemap(sm_url):
+            async for url in self._parse_sitemap(sm_url, last_url):
                 yield url
 
     async def _fetch(self, url):
@@ -76,19 +83,28 @@ class SitemapFetcher:
                 else:
                     raise RuntimeError("sitemap not found")
 
-    async def _parse_sitemap(self, url):
+    async def _parse_sitemap(self, url, last_url=None):
         text = await self._fetch(url)
-        
         root = etree.fromstring(text.encode())
         ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-        
+
+        skip = last_url is not None
         for sitemap in root.xpath("//sm:sitemap/sm:loc/text()", namespaces=ns):
             if sitemap in IGNORE_LIST:
                 continue
             async for u in self._parse_sitemap(sitemap.strip()):
-                yield u
-        
+                if skip and u == last_url:
+                    skip = False
+                    continue
+                if not skip:
+                    yield u
+
         for loc in root.xpath("//sm:url/sm:loc/text()", namespaces=ns):
             loc = loc.strip()
+            if skip:
+                if loc == last_url:
+                    skip = False
+                continue
             if self._robot_manager.is_allowed(loc):
+                await self.mongo.update_last_url(self.base_url, loc)
                 yield loc

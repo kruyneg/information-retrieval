@@ -2,9 +2,10 @@ import asyncio
 import aiohttp
 import sys
 from tqdm import tqdm
+import signal
 
 from internal.documents import Document
-from internal.sitemap import SitemapFetcher
+from internal.fetchurl import UrlFetcher
 from internal.storage import StorageManager
 
 
@@ -28,34 +29,44 @@ class RateLimiter:
 
 
 class PageDownloader:
-    def __init__(self, sitemaps: list["SitemapFetcher"], storage: "StorageManager",
-                 *, workers: int = 4, batch_size: int = 100):
-        self.sitemaps = sitemaps
+    def __init__(self, fetchers: list["UrlFetcher"], storage: "StorageManager",
+                 *, workers: int = 4, batch_size: int = 5):
+        self.url_fetchers = fetchers
         self.storage = storage
         self._workers_num = workers
         self._queue = asyncio.Queue(maxsize=batch_size)
         self._stopped = asyncio.Event()
         self._limiters: dict[str, RateLimiter] = {
-            sm.base_url: RateLimiter(sm.get_delay()) for sm in self.sitemaps
+            sm.base_url: RateLimiter(sm.get_delay()) for sm in self.url_fetchers
         }
+        for fetcher in self.url_fetchers:
+            fetcher.mongo = storage
 
-        self.storage.on_limit_reached = self.stop
-
-    def stop(self):
-        """ Вызывается при достижении лимита, чтобы завершить всех воркеров """
+    async def stop(self):
+        """
+        Вызывается при завершении программы,
+        чтобы корректно завершить всех воркеров
+        """
+        tqdm.write("\n[INFO] Graceful shutdown initiated...")
         self._stopped.set()
+        
+        await self._queue.join()
 
-        while not self._queue.empty():
-            self._queue.get_nowait()
+        # while not self._queue.empty():
+        #     self._queue.get_nowait()
 
     async def run(self):
+        loop = asyncio.get_running_loop()
+        for s in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(s, lambda: asyncio.create_task(self.stop()))
+        
         await self.storage.check_connection()
         async with aiohttp.ClientSession(headers={"User-Agent": "Mozilla/5.0"}) as session:
             tasks = [asyncio.create_task(self._worker(session))
                      for _ in range(self._workers_num)]
 
             producers = [asyncio.create_task(self._produce(sm))
-                         for sm in self.sitemaps]
+                         for sm in self.url_fetchers]
 
             await asyncio.gather(*producers)
 
@@ -64,12 +75,12 @@ class PageDownloader:
 
             await asyncio.gather(*tasks)
 
-    async def _produce(self, sitemap: SitemapFetcher):
+    async def _produce(self, sitemap: UrlFetcher):
         base = sitemap.base_url
         async for url in sitemap.urls():
+            await self._queue.put((url, base))
             if self._stopped.is_set():
                 break
-            await self._queue.put((url, base))
 
     async def _worker(self, session: aiohttp.ClientSession):
         while True:
@@ -80,8 +91,8 @@ class PageDownloader:
             url, base = item
             limiter = self._limiters[base]
             await limiter.wait()
-            if self._stopped.is_set():
-                break
+            # if self._stopped.is_set():
+            #     break
 
             await self._fetch(session, url)
             self._queue.task_done()

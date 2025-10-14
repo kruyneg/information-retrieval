@@ -3,7 +3,7 @@ import asyncio
 
 from internal.storage import StorageManager
 from internal.loader import PageDownloader
-from internal.sitemap import SitemapFetcher
+from internal.fetchurl import UrlFetcher
 
 
 def parse_program_args():
@@ -23,11 +23,11 @@ def parse_program_args():
 async def main():
     args = parse_program_args()
 
-    sitemaps = [SitemapFetcher("https://www.geeksforgeeks.org"),
-                SitemapFetcher("https://habr.com")]
+    fetchers = [UrlFetcher("https://www.geeksforgeeks.org"),
+                UrlFetcher("https://habr.com")]
     storage = StorageManager(args.mongo_url, number_limit=args.num)
 
-    loader = PageDownloader(sitemaps, storage, workers=args.workers)
+    loader = PageDownloader(fetchers, storage, workers=args.workers)
     await loader.run()
 
 
