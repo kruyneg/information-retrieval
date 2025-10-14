@@ -34,7 +34,7 @@ mongo-dump:
 	@echo "💾 Резервная копия MongoDB сохранена в $(MONGO_BACKUP_DIR)"
 
 run-parser:
-	$(ACTIVATE) && $(PYTHON) ./parser/load_pages.py -u $(MONGO_URL)
+	$(ACTIVATE) && $(PYTHON) ./parser/load_pages.py ./parser/configs/config.yml
 
 start: mongo-up run-parser
 

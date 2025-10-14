@@ -1,17 +1,15 @@
 import asyncio
 import aiohttp
-import sys
-from tqdm import tqdm
+import logging
 import signal
 
+from internal.config import config
 from internal.documents import Document
 from internal.fetchurl import UrlFetcher
 from internal.storage import StorageManager
 
 
-def log_err(msg: str):
-    tqdm.write(f"{msg}", file=sys.stderr)
-
+logger = logging.getLogger(__name__)
 
 class RateLimiter:
     def __init__(self, delay: float):
@@ -47,21 +45,19 @@ class PageDownloader:
         Вызывается при завершении программы,
         чтобы корректно завершить всех воркеров
         """
-        tqdm.write("\n[INFO] Graceful shutdown initiated...")
+        logger.error("Graceful shutdown initiated (not a error)")
         self._stopped.set()
-        
-        await self._queue.join()
 
-        # while not self._queue.empty():
-        #     self._queue.get_nowait()
+        await self._queue.join()
 
     async def run(self):
         loop = asyncio.get_running_loop()
         for s in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(s, lambda: asyncio.create_task(self.stop()))
-        
+            loop.add_signal_handler(
+                s, lambda: asyncio.create_task(self.stop()))
+
         await self.storage.check_connection()
-        async with aiohttp.ClientSession(headers={"User-Agent": "Mozilla/5.0"}) as session:
+        async with aiohttp.ClientSession(headers={"User-Agent": config.crawler.user_agent}) as session:
             tasks = [asyncio.create_task(self._worker(session))
                      for _ in range(self._workers_num)]
 
@@ -85,14 +81,12 @@ class PageDownloader:
     async def _worker(self, session: aiohttp.ClientSession):
         while True:
             item = await self._queue.get()
-            if item is None:  # sentinel
+            if item is None:
                 break
 
             url, base = item
             limiter = self._limiters[base]
             await limiter.wait()
-            # if self._stopped.is_set():
-            #     break
 
             await self._fetch(session, url)
             self._queue.task_done()
@@ -104,19 +98,19 @@ class PageDownloader:
                     html = await resp.text()
                     try:
                         doc = Document(url, html)
-
+                        logger.debug(f"Saving {url}")
                         await self.storage.save(doc)
 
                     except ValueError as e:
-                        log_err(
+                        logger.error(
                             f"[PARSE ERROR] {url}: {e}")
                     except Exception as e:
-                        log_err(
-                            f"[ERROR] {type(e)} {url}: {e}")
+                        logger.error(
+                            f"{type(e)} {url}: {e}")
                 elif resp.status == 404:
                     pass
                 else:
-                    log_err(f"[HTTP {resp.status}] {url}")
+                    logger.error(f"[HTTP {resp.status}] {url}")
 
         except Exception as e:
-            log_err(f"[NETWORK ERROR] {url}: {e}")
+            logger.error(f"[NETWORK ERROR] {url}: {e}")

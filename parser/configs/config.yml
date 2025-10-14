@@ -1,0 +1,24 @@
+mongo: 
+  url: mongodb://user:password@localhost:27017/
+  db: parser_db
+  collection: articles
+  progress_collection: url_progress
+
+log_level: debug
+workers: 4
+
+crawler:
+  user_agent: SimpleCrawler
+  default_delay: 1
+  ignore:
+    - "https://www.geeksforgeeks.org/category/category-sitemap-1.xml"
+    - "https://www.geeksforgeeks.org/quizzes/quiz-sitemap-1.xml"
+    - "https://www.geeksforgeeks.org/quizzes/quiz-sitemap-2.xml"
+    - "https://www.geeksforgeeks.org/quizzes/quiz-sitemap-3.xml"
+    - "https://www.geeksforgeeks.org/videos/video-sitemap-1.xml"
+    - "https://www.geeksforgeeks.org/videos/video-sitemap-2.xml"
+    - "https://www.geeksforgeeks.org/videos/video-sitemap-3.xml"
+    - "https://www.geeksforgeeks.org/videos/video-sitemap-4.xml"
+    - "https://www.geeksforgeeks.org/videos/video-sitemap-5.xml"
+    - "https://www.geeksforgeeks.org/videos/video-sitemap-6.xml"
+    - "https://www.geeksforgeeks.org/videos/video-sitemap-7.xml"

@@ -2,19 +2,16 @@ import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from dataclasses import asdict
 
+from internal.config import config
 from internal.documents import Document
 
 
 class StorageManager:
-    def __init__(self, mongo_url: str,
-                 db_name: str = "parser_db", collection: str = "articles",
-                 *, number_limit: int = None):
-        self._numlim = number_limit
-
-
-        self._client = AsyncIOMotorClient(mongo_url)
-        self._col = self._client[db_name][collection]
-        self._progress_col = self._client[db_name]["url_progress"]
+    def __init__(self):
+        self._client = AsyncIOMotorClient(config.mongo.url)
+        self._col = self._client[config.mongo.db][config.mongo.collection]
+        self._progress_col = \
+            self._client[config.mongo.db][config.mongo.progress_collection]
 
     async def save(self, doc: Document):
         await self._col.update_one(
@@ -33,5 +30,6 @@ class StorageManager:
     async def update_last_url(self, base_url: str, url: str):
         await self._progress_col.update_one(
             {"_id": base_url},
-            {"$set": {"last_url": url}}
+            {"$set": {"last_url": url}},
+            upsert=True
         )
