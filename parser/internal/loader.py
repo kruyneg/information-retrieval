@@ -4,7 +4,7 @@ import logging
 import signal
 
 from internal.config import config
-from internal.documents import Document
+from internal.documents import Document, parse_document
 from internal.fetchurl import UrlFetcher
 from internal.storage import StorageManager
 
@@ -98,6 +98,15 @@ class PageDownloader:
                     html = await resp.text()
                     try:
                         doc = Document(url, html)
+
+                        parsed = parse_document(url, html)
+                        text = ''
+                        if parsed.title:
+                            text += parsed.title + '\n'
+                        if parsed.text:
+                            text += parsed.text
+                        if text:
+                            doc.text = text.strip()
                         logger.debug(f"Saving {url}")
                         await self.storage.save(doc)
 

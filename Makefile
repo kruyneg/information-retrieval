@@ -29,9 +29,27 @@ mongo-down:
 
 mongo-dump:
 	mkdir -p $(MONGO_BACKUP_DIR)
-	docker exec -it $(MONGO_CONTAINER) mongodump --out /dump
+	docker exec -i $(MONGO_CONTAINER) mongodump \
+		--username $(shell echo $(MONGO_URL) | sed -E 's|mongodb://([^:]+):.*|\1|') \
+		--password $(shell echo $(MONGO_URL) | sed -E 's|mongodb://[^:]+:([^@]+)@.*|\1|') \
+		--authenticationDatabase admin \
+		--db parser_db \
+		--collection articles \
+		--out /dump
 	docker cp $(MONGO_CONTAINER):/dump $(MONGO_BACKUP_DIR)
 	@echo "💾 Резервная копия MongoDB сохранена в $(MONGO_BACKUP_DIR)"
+
+mongo-restore:
+	docker cp $(MONGO_BACKUP_DIR)/dump $(MONGO_CONTAINER):/restore
+	docker exec -i $(MONGO_CONTAINER) mongorestore \
+		--username $(shell echo $(MONGO_URL) | sed -E 's|mongodb://([^:]+):.*|\1|') \
+		--password $(shell echo $(MONGO_URL) | sed -E 's|mongodb://[^:]+:([^@]+)@.*|\1|') \
+		--authenticationDatabase admin \
+		--db parser_db \
+		--collection articles \
+		--drop \
+		/restore/parser_db/articles.bson
+	@echo "♻️  Восстановление MongoDB завершено из $(MONGO_BACKUP_DIR)"
 
 run-parser:
 	$(ACTIVATE) && $(PYTHON) ./parser/load_pages.py ./parser/configs/config.yml

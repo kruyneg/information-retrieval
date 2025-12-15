@@ -22,8 +22,8 @@ class RobotManager:
                     self._parser.parse(text.splitlines())
                     delay = self._parser.crawl_delay(
                         self.user_agent)
-                    if delay is not None:
-                        self.crawl_delay = delay
+                    # if delay is not None:
+                    #     self.crawl_delay = delay
                 else:
                     self._parser = None
 

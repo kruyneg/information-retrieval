@@ -4,3 +4,7 @@ data/
 __pycache__
 
 .vscode/
+
+build/
+
+mongo_backup/

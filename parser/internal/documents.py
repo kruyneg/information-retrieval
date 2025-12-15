@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 class Document:
     url: str
     html: str
+    text: str | None = None
     created_at: float = field(default_factory=lambda: time())
     site: str = field(init=False)
 
@@ -35,8 +36,8 @@ class HabrDocument:
         body = soup.find("div", class_="article-formatted-body")
         text = body.get_text(separator="\n", strip=True) if body else None
 
-        if not text:
-            raise ValueError(f"не достаточно данных для text")
+        if not text and not title:
+            raise ValueError(f"не достаточно данных")
 
         return HabrDocument(url=url, title=title, text=text)
 
@@ -61,10 +62,10 @@ class GeeksDocument:
         text_div = soup.find('div', class_='text')
         article_text = text_div.get_text(strip=True) if text_div else None
 
-        if not article_text:
-            raise ValueError(f"не достаточно данных для text")
+        if not article_text and not title:
+            raise ValueError(f"не достаточно данных")
 
-        return HabrDocument(url=url, title=title, text=article_text)
+        return GeeksDocument(url=url, title=title, text=article_text)
 
 
 def parse_document(url: str, html: str) -> HabrDocument | GeeksDocument:

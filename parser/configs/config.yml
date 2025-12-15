@@ -4,7 +4,7 @@ mongo:
   collection: articles
   progress_collection: url_progress
 
-log_level: debug
+log_level: info
 workers: 4
 
 crawler:
