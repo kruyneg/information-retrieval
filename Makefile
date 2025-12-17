@@ -64,6 +64,9 @@ clean:
 	rm -rf $(MONGO_BACKUP_DIR)
 	@echo "🧹 Всё очищено."
 
+build-dicts:
+	$(ACTIVATE) && cd engine && $(PYTHON) scripts/build_dicts.py
+
 help:
 	@echo ""
 	@echo "Доступные команды:"

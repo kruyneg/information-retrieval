@@ -1,13 +1,13 @@
 #include "linguistics/preprocessor.h"
 
-#include "linguistics/lemmatization/mock_lemmatizer.h"
+#include "linguistics/lemmatization/dict_lemmatizer.h"
 #include "linguistics/tokenization/tokenizer_impl.h"
 
 namespace linguistics {
 
 Preprocessor CreatePreprocessor() {
   auto tokenizer = std::make_unique<TokenizerImpl>();
-  auto lemmatizer = std::make_unique<MockLemmatizer>();
+  auto lemmatizer = std::make_unique<DictLemmatizer>();
   return Preprocessor(std::move(tokenizer), std::move(lemmatizer));
 }
 
