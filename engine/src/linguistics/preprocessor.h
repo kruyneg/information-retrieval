@@ -14,6 +14,9 @@ class Preprocessor {
 
   std::vector<std::string> Preprocess(const std::string& text) const;
 
+  std::vector<std::string> Tokenize(const std::string& text) const;
+  std::string Lemmatize(const std::string& word) const;
+
  private:
   std::unique_ptr<Tokenizer> tokenizer_;
   std::unique_ptr<Lemmatizer> lemmatizer_;

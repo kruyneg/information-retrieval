@@ -15,6 +15,7 @@ class Storage {
   };
 
   virtual std::unique_ptr<Cursor> GetCursor() const = 0;
+  virtual Document GetDocByID(const std::string& doc_id) = 0;
 };
 
 }  // namespace storage

@@ -24,4 +24,12 @@ std::vector<std::string> Preprocessor::Preprocess(
   return result;
 }
 
+std::vector<std::string> Preprocessor::Tokenize(const std::string& text) const {
+  return tokenizer_->Tokenize(text);
+}
+
+std::string Preprocessor::Lemmatize(const std::string& word) const {
+  return lemmatizer_->Lemmatize(word);
+}
+
 }  // namespace linguistics

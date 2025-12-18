@@ -1,11 +1,11 @@
 #include "linguistics/lemmatization/dict_lemmatizer.h"
 
+#include <algorithm>
+#include <fstream>
+#include <sstream>
+
 #include "linguistics/lemmatization/stemming.h"
 #include "linguistics/utils.h"
-
-#include <fstream>
-#include <algorithm>
-#include <sstream>
 
 namespace linguistics {
 
