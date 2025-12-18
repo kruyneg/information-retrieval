@@ -1,7 +1,7 @@
 add_library(storage
-    storage.h
+    doc_storage.h
     document.h
-    mongo_storage.h
-    mongo_storage.cpp)
+    mongo_doc_storage.h
+    mongo_doc_storage.cpp)
 
 target_link_libraries(storage PRIVATE mongocxx bsoncxx)

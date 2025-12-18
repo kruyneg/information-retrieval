@@ -1,4 +1,4 @@
-#include "engine/query/query.h"
+#include "engine/query/bool_query.h"
 
 #include <stack>
 #include <stdexcept>
@@ -93,8 +93,8 @@ indexing::PostingList ExecuteAST(const query::ASTNode& node,
 
 namespace query {
 
-Query Query::Parse(const std::string& query,
-                   const linguistics::Preprocessor& preprocessor) {
+BoolQuery BoolQuery::Parse(const std::string& query,
+                           const linguistics::Preprocessor& preprocessor) {
   std::vector<std::string> raw_tokens;
   std::string buffer;
   for (char c : query) {
@@ -127,12 +127,13 @@ Query Query::Parse(const std::string& query,
     }
   }
 
-  return Query(BuildAST(tokens));
+  return BoolQuery(BuildAST(tokens));
 }
 
-Query::Query(std::unique_ptr<query::ASTNode>&& ast) : tree_(std::move(ast)) {}
+BoolQuery::BoolQuery(std::unique_ptr<query::ASTNode>&& ast)
+    : tree_(std::move(ast)) {}
 
-indexing::PostingList Query::Execute(const indexing::InvertedIndex& index) {
+indexing::PostingList BoolQuery::Execute(const indexing::InvertedIndex& index) {
   return ExecuteAST(*tree_, index);
 }
 

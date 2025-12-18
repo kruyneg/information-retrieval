@@ -1,4 +1,4 @@
-#include "storage/mongo_storage.h"
+#include "storage/mongo_doc_storage.h"
 
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/builder/basic/kvp.hpp>
@@ -12,7 +12,8 @@
 
 namespace storage {
 
-MongoStorage::MongoStorage(const std::string& uri, const std::string& db_name)
+MongoDocStorage::MongoDocStorage(const std::string& uri,
+                                 const std::string& db_name)
     : client_(mongocxx::uri{uri}) {
   try {
     auto database = client_[db_name];
@@ -27,12 +28,13 @@ MongoStorage::MongoStorage(const std::string& uri, const std::string& db_name)
   }
 }
 
-Document MongoStorage::GetDocByID(const std::string& doc_id) {
+Document MongoDocStorage::GetDocByID(const std::string& doc_id) {
   bsoncxx::oid oid;
   try {
     oid = bsoncxx::oid(doc_id);
   } catch (const bsoncxx::exception& e) {
-    throw std::runtime_error("MongoStorage: invalid doc_id format: " + doc_id);
+    throw std::runtime_error("MongoDocStorage: invalid doc_id format: " +
+                             doc_id);
   }
 
   bsoncxx::builder::basic::document filter_builder;
@@ -40,7 +42,7 @@ Document MongoStorage::GetDocByID(const std::string& doc_id) {
 
   auto maybe_doc = articles_.find_one(filter_builder.view());
   if (!maybe_doc) {
-    throw std::runtime_error("MongoStorage: document not found for id: " +
+    throw std::runtime_error("MongoDocStorage: document not found for id: " +
                              doc_id);
   }
 
@@ -64,7 +66,7 @@ Document MongoStorage::GetDocByID(const std::string& doc_id) {
   return result;
 }
 
-std::unique_ptr<Storage::Cursor> MongoStorage::GetCursor() const {
+std::unique_ptr<DocStorage::Cursor> MongoDocStorage::GetCursor() const {
   return std::make_unique<MongoDocumentCursor>(articles_);
 }
 

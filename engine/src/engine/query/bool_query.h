@@ -15,12 +15,12 @@ class PostingList;
 
 namespace query {
 
-class Query {
+class BoolQuery {
  public:
-  static Query Parse(const std::string& query,
-                     const linguistics::Preprocessor& preprocessor);
+  static BoolQuery Parse(const std::string& query,
+                         const linguistics::Preprocessor& preprocessor);
 
-  explicit Query(std::unique_ptr<ASTNode>&& tree);
+  explicit BoolQuery(std::unique_ptr<ASTNode>&& tree);
 
   indexing::PostingList Execute(const indexing::InvertedIndex& index);
 

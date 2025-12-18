@@ -1,16 +1,17 @@
 #include "engine/engine.h"
 
-#include "query/query.h"
+#include "engine/query/bool_query.h"
+#include "engine/query/ranked_query.h"
 #include "storage/document.h"
-#include "storage/mongo_storage.h"
+#include "storage/mongo_doc_storage.h"
 
 Engine CreateEngine() {
-  auto storage = std::make_unique<storage::MongoStorage>(
+  auto storage = std::make_unique<storage::MongoDocStorage>(
       "mongodb://user:password@localhost:27017/", "parser_db");
   return Engine(std::move(storage));
 }
 
-Engine::Engine(std::unique_ptr<storage::Storage>&& storage)
+Engine::Engine(std::unique_ptr<storage::DocStorage>&& storage)
     : storage_(std::move(storage)),
       preprocessor_(linguistics::CreatePreprocessor()) {}
 
@@ -21,22 +22,33 @@ void Engine::BuildIndex() {
   while (doc_opt.has_value()) {
     const auto& doc = doc_opt.value();
     const auto terms = preprocessor_.Preprocess(doc.text);
-    for (const auto& term : terms) {
-      index_.AddTerm(term, doc.id);
-    }
+    index_.AddDocument(doc.id, terms);
     doc_opt = cursor->Next();
   }
 }
 
-std::vector<storage::Document> Engine::Search(
+std::vector<storage::Document> Engine::SearchBoolean(
     const std::string& query_text) const {
-  auto query = query::Query::Parse(query_text, preprocessor_);
+  auto query = query::BoolQuery::Parse(query_text, preprocessor_);
   const auto posting_list = query.Execute(index_);
 
+  return GetDocsFromIDs(posting_list.docs());
+}
+
+std::vector<storage::Document> Engine::SearchRanked(
+    const std::string& query_text) const {
+  auto query = query::RankedQuery::Parse(query_text, preprocessor_);
+  const auto ranked_list = query.Execute(index_);
+
+  return GetDocsFromIDs(ranked_list);
+}
+
+std::vector<storage::Document> Engine::GetDocsFromIDs(
+    const std::vector<std::string>& doc_ids) const {
   std::vector<storage::Document> result;
-  for (const auto& doc_id : posting_list.docs()) {
+  result.reserve(doc_ids.size());
+  for (const auto& doc_id : doc_ids) {
     result.push_back(storage_->GetDocByID(doc_id));
   }
-
   return result;
 }

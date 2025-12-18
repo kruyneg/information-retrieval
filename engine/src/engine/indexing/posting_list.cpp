@@ -7,12 +7,23 @@ namespace indexing {
 PostingList::PostingList() = default;
 
 void PostingList::Add(const std::string& doc_id) {
-  if (list_.empty() || list_.back() != doc_id) {
-    list_.push_back(doc_id);
+  if (!list_.empty() && list_.back().doc_id == doc_id) {
+    ++list_.back().tf;
+  } else {
+    list_.push_back({doc_id, 1});
   }
 }
 
-[[nodiscard]] const std::vector<std::string>& PostingList::docs() const {
+[[nodiscard]] std::vector<std::string> PostingList::docs() const {
+  std::vector<std::string> result;
+  result.reserve(list_.size());
+  for (const auto& posting : list_) {
+    result.push_back(posting.doc_id);
+  }
+  return result;
+}
+
+[[nodiscard]] const std::vector<Posting>& PostingList::postings() const {
   return list_;
 }
 
@@ -20,11 +31,11 @@ PostingList PostingList::Intersect(const PostingList& other) const {
   PostingList result;
 
   for (size_t i = 0, j = 0; i < list_.size() && j < other.list_.size();) {
-    if (list_[i] == other.list_[j]) {
-      result.Add(list_[i]);
+    if (list_[i].doc_id == other.list_[j].doc_id) {
+      result.list_.push_back({list_[i].doc_id, 0});
       ++i;
       ++j;
-    } else if (list_[i] < other.list_[j]) {
+    } else if (list_[i].doc_id < other.list_[j].doc_id) {
       ++i;
     } else {
       ++j;
@@ -38,20 +49,20 @@ PostingList PostingList::Merge(const PostingList& other) const {
 
   for (size_t i = 0, j = 0; i < list_.size() || j < other.list_.size();) {
     if (i == list_.size()) {
-      result.Add(other.list_[j]);
+      result.list_.push_back({other.list_[j].doc_id, 0});
       ++j;
     } else if (j == other.list_.size()) {
-      result.Add(list_[i]);
+      result.list_.push_back({list_[i].doc_id, 0});
       ++i;
-    } else if (list_[i] == other.list_[j]) {
-      result.Add(list_[i]);
+    } else if (list_[i].doc_id == other.list_[j].doc_id) {
+      result.list_.push_back({list_[i].doc_id, 0});
       ++i;
       ++j;
-    } else if (list_[i] < other.list_[j]) {
-      result.Add(list_[i]);
+    } else if (list_[i].doc_id < other.list_[j].doc_id) {
+      result.list_.push_back({list_[i].doc_id, 0});
       ++i;
     } else {
-      result.Add(other.list_[j]);
+      result.list_.push_back({other.list_[j].doc_id, 0});
       ++j;
     }
   }
@@ -62,16 +73,16 @@ PostingList PostingList::Substract(const PostingList& other) const {
   PostingList result;
 
   for (size_t i = 0, j = 0; j < other.list_.size();) {
-    if (i == list_.size()) {
-      result.Add(other.list_[j]);
-      ++j;
-    } else if (list_[i] == other.list_[j]) {
+    if (j == other.list_.size()) {
+      result.list_.push_back({list_[i].doc_id, 0});
+      ++i;
+    } else if (list_[i].doc_id == other.list_[j].doc_id) {
       ++i;
       ++j;
-    } else if (list_[i] < other.list_[j]) {
+    } else if (list_[i].doc_id < other.list_[j].doc_id) {
+      result.list_.push_back({list_[i].doc_id, 0});
       ++i;
     } else {
-      result.Add(other.list_[j]);
       ++j;
     }
   }
@@ -84,7 +95,7 @@ PostingList PostingList::operator&(const PostingList& other) const {
 PostingList PostingList::operator|(const PostingList& other) const {
   return Merge(other);
 }
-PostingList PostingList::operator^(const PostingList& other) const {
+PostingList PostingList::operator-(const PostingList& other) const {
   return Substract(other);
 }
 

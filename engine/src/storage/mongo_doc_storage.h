@@ -4,11 +4,11 @@
 #include <mongocxx/collection.hpp>
 #include <mongocxx/cursor.hpp>
 
-#include "storage/storage.h"
+#include "storage/doc_storage.h"
 
 namespace storage {
 
-class MongoDocumentCursor : public Storage::Cursor {
+class MongoDocumentCursor : public DocStorage::Cursor {
  public:
   MongoDocumentCursor(mongocxx::collection col);
   std::optional<Document> Next() override;
@@ -18,11 +18,11 @@ class MongoDocumentCursor : public Storage::Cursor {
   std::optional<mongocxx::cursor::iterator> itr_opt_;
 };
 
-class MongoStorage : public Storage {
+class MongoDocStorage : public DocStorage {
  public:
-  MongoStorage(const std::string& uri, const std::string& db_name);
+  MongoDocStorage(const std::string& uri, const std::string& db_name);
 
-  std::unique_ptr<Storage::Cursor> GetCursor() const override;
+  std::unique_ptr<DocStorage::Cursor> GetCursor() const override;
 
   Document GetDocByID(const std::string& doc_id) override;
 

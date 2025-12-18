@@ -7,7 +7,7 @@ namespace storage {
 
 class Document;
 
-class Storage {
+class DocStorage {
  public:
   class Cursor {
    public:
