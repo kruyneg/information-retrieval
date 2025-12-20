@@ -2,6 +2,7 @@
 
 #include "engine/query/bool_query.h"
 #include "engine/query/ranked_query.h"
+#include "indexing/posting_list.h"
 #include "storage/document.h"
 #include "storage/mongo_doc_storage.h"
 
@@ -44,11 +45,11 @@ std::vector<storage::Document> Engine::SearchRanked(
 }
 
 std::vector<storage::Document> Engine::GetDocsFromIDs(
-    const std::vector<std::string>& doc_ids) const {
+    const std::vector<indexing::DocID>& doc_ids) const {
   std::vector<storage::Document> result;
   result.reserve(doc_ids.size());
   for (const auto& doc_id : doc_ids) {
-    result.push_back(storage_->GetDocByID(doc_id));
+    result.push_back(storage_->GetDocByID(static_cast<int32_t>(doc_id)));
   }
   return result;
 }

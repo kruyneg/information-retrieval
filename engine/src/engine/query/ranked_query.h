@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "engine/indexing/types.h"
+
 namespace linguistics {
 class Preprocessor;
 }
@@ -22,7 +24,7 @@ class RankedQuery {
 
   explicit RankedQuery(const std::vector<std::string>& terms);
 
-  std::vector<std::string> Execute(const indexing::InvertedIndex& index);
+  std::vector<indexing::DocID> Execute(const indexing::InvertedIndex& index);
 
  private:
   std::unordered_map<std::string, uint32_t> query_tf_;

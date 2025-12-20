@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "engine/indexing/inverted_index.h"
+#include "engine/indexing/posting_list.h"
 #include "linguistics/preprocessor.h"
 
 namespace {

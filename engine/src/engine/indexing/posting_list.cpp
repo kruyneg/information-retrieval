@@ -6,16 +6,8 @@ namespace indexing {
 
 PostingList::PostingList() = default;
 
-void PostingList::Add(const std::string& doc_id) {
-  if (!list_.empty() && list_.back().doc_id == doc_id) {
-    ++list_.back().tf;
-  } else {
-    list_.push_back({doc_id, 1});
-  }
-}
-
-[[nodiscard]] std::vector<std::string> PostingList::docs() const {
-  std::vector<std::string> result;
+[[nodiscard]] std::vector<uint32_t> PostingList::docs() const {
+  std::vector<uint32_t> result;
   result.reserve(list_.size());
   for (const auto& posting : list_) {
     result.push_back(posting.doc_id);

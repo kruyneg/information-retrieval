@@ -16,7 +16,7 @@ class Engine {
 
  private:
   std::vector<storage::Document> GetDocsFromIDs(
-      const std::vector<std::string>& doc_ids) const;
+      const std::vector<indexing::DocID>& doc_ids) const;
 
   std::unique_ptr<storage::DocStorage> storage_;
   indexing::InvertedIndex index_;

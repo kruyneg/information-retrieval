@@ -28,17 +28,9 @@ MongoDocStorage::MongoDocStorage(const std::string& uri,
   }
 }
 
-Document MongoDocStorage::GetDocByID(const std::string& doc_id) {
-  bsoncxx::oid oid;
-  try {
-    oid = bsoncxx::oid(doc_id);
-  } catch (const bsoncxx::exception& e) {
-    throw std::runtime_error("MongoDocStorage: invalid doc_id format: " +
-                             doc_id);
-  }
-
+Document MongoDocStorage::GetDocByID(int32_t doc_id) {
   bsoncxx::builder::basic::document filter_builder;
-  filter_builder.append(bsoncxx::builder::basic::kvp("_id", oid));
+  filter_builder.append(bsoncxx::builder::basic::kvp("doc_id", doc_id));
 
   auto maybe_doc = articles_.find_one(filter_builder.view());
   if (!maybe_doc) {
@@ -85,8 +77,8 @@ std::optional<Document> MongoDocumentCursor::Next() {
   ++itr_opt_.value();
 
   Document result;
-  if (auto el = doc["_id"]; el && el.type() == bsoncxx::type::k_oid) {
-    result.id = el.get_oid().value.to_string();
+  if (auto el = doc["doc_id"]; el && el.type() == bsoncxx::type::k_int32) {
+    result.id = el.get_int32().value;
   }
 
   if (auto el = doc["url"]; el && el.type() == bsoncxx::type::k_string) {
@@ -94,7 +86,7 @@ std::optional<Document> MongoDocumentCursor::Next() {
   }
 
   if (auto el = doc["text"]; el && el.type() == bsoncxx::type::k_string) {
-    result.text = doc["text"].get_string().value.begin();
+    result.text = doc["text"].get_string().value;
   }
   return result;
 }

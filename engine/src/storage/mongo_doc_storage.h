@@ -24,7 +24,7 @@ class MongoDocStorage : public DocStorage {
 
   std::unique_ptr<DocStorage::Cursor> GetCursor() const override;
 
-  Document GetDocByID(const std::string& doc_id) override;
+  Document GetDocByID(int32_t doc_id) override;
 
  private:
   mongocxx::client client_;

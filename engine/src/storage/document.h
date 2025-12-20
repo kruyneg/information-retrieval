@@ -5,7 +5,7 @@
 namespace storage {
 
 struct Document {
-  std::string id;
+  int32_t id;
   std::string url;
   std::string text;
 };

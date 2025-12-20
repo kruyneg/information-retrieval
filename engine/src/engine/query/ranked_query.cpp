@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "engine/indexing/inverted_index.h"
+#include "engine/indexing/posting_list.h"
 #include "linguistics/preprocessor.h"
 
 namespace query {
@@ -20,10 +21,10 @@ RankedQuery::RankedQuery(const std::vector<std::string>& terms) {
   }
 }
 
-std::vector<std::string> RankedQuery::Execute(
+std::vector<indexing::DocID> RankedQuery::Execute(
     const indexing::InvertedIndex& index) {
-  std::unordered_map<std::string, double> doc_scores;
-  std::unordered_map<std::string, double> doc_norms;
+  std::unordered_map<indexing::DocID, double> doc_scores;
+  std::unordered_map<indexing::DocID, double> doc_norms;
   double query_norm = 0.0;
 
   for (const auto& [term, tf] : query_tf_) {
@@ -45,7 +46,7 @@ std::vector<std::string> RankedQuery::Execute(
 
   query_norm = std::sqrt(query_norm);
 
-  std::vector<std::pair<std::string, double>> ranked;
+  std::vector<std::pair<indexing::DocID, double>> ranked;
   ranked.reserve(doc_scores.size());
 
   for (const auto& [doc_id, score] : doc_scores) {
@@ -60,7 +61,7 @@ std::vector<std::string> RankedQuery::Execute(
   std::sort(ranked.begin(), ranked.end(),
             [](const auto& a, const auto& b) { return a.second > b.second; });
 
-  std::vector<std::string> result;
+  std::vector<indexing::DocID> result;
   result.reserve(ranked.size());
   for (auto& [doc_id, _] : ranked) {
     result.push_back(std::move(doc_id));

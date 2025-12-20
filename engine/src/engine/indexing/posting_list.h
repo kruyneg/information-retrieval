@@ -1,23 +1,19 @@
 #pragma once
 
-#include <cstdint>
 #include <string>
 #include <vector>
 
+#include "engine/indexing/types.h"
+
 namespace indexing {
 
-struct Posting {
-  std::string doc_id;
-  uint32_t tf;
-};
+class CompressedPostingList;
 
 class PostingList {
  public:
   PostingList();
 
-  void Add(const std::string& doc_id);
-
-  [[nodiscard]] std::vector<std::string> docs() const;
+  [[nodiscard]] std::vector<uint32_t> docs() const;
   [[nodiscard]] const std::vector<Posting>& postings() const;
 
   PostingList Intersect(const PostingList& other) const;
@@ -29,6 +25,8 @@ class PostingList {
   PostingList operator-(const PostingList& other) const;
 
  private:
+  friend class CompressedPostingList;
+
   std::vector<Posting> list_;
 };
 
