@@ -35,7 +35,7 @@ Document MongoDocStorage::GetDocByID(int32_t doc_id) {
   auto maybe_doc = articles_.find_one(filter_builder.view());
   if (!maybe_doc) {
     throw std::runtime_error("MongoDocStorage: document not found for id: " +
-                             doc_id);
+                             std::to_string(doc_id));
   }
 
   auto doc_view = maybe_doc->view();

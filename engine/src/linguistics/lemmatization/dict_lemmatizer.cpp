@@ -19,8 +19,10 @@ bool EndsWith(const std::string& s, const std::string& suf) {
 
 namespace linguistics {
 
-const std::string DictLemmatizer::kDefaultRuPath = "data/ru_lemmas.bin";
-const std::string DictLemmatizer::kDefaultEnPath = "data/en_lemmas.bin";
+const std::string DictLemmatizer::kDefaultRuPath =
+    "/home/kruyneg/Programming/InformationRetrieval/engine/data/ru_lemmas.bin";
+const std::string DictLemmatizer::kDefaultEnPath =
+    "/home/kruyneg/Programming/InformationRetrieval/engine/data/en_lemmas.bin";
 
 DictLemmatizer::DictLemmatizer(
     const std::string& ru_dict_path /* = kDefaultRuPath */,

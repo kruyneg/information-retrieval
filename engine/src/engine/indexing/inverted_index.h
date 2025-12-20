@@ -5,6 +5,10 @@
 
 #include "engine/indexing/compressed_posting_list.h"
 
+namespace storage {
+class FileIndexStorage;
+}
+
 namespace indexing {
 
 class InvertedIndex {
@@ -17,6 +21,8 @@ class InvertedIndex {
   uint32_t GetDocLength(DocID doc_id) const;
 
  private:
+  friend class storage::FileIndexStorage;
+
   std::unordered_map<std::string, CompressedPostingList> index_;
   std::unordered_map<DocID, uint32_t> doc_lengths_;
 };

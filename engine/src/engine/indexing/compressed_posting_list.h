@@ -5,6 +5,10 @@
 
 #include "engine/indexing/types.h"
 
+namespace storage {
+class FileIndexStorage;
+}
+
 namespace indexing {
 
 class PostingList;
@@ -16,6 +20,8 @@ class CompressedPostingList {
   PostingList Decompress() const;
 
  private:
+  friend class storage::FileIndexStorage;
+
   void VByteEncode(uint32_t value);
   uint32_t VByteDecode(size_t& idx) const;
 
