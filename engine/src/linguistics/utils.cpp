@@ -1,12 +1,20 @@
 #include "linguistics/utils.h"
 
+#include <string>
+
 namespace linguistics {
 
 bool IsEnglish(const std::string& word) {
   return tolower(word[0]) >= 'a' && tolower(word[0]) <= 'z';
 }
 
-#include <string>
+void NormalizeYo(std::string& text) {
+  for (size_t i = 0; i + 1 < text.size(); ++i) {
+    if ((unsigned char)text[i] == 0xD1 && (unsigned char)text[i + 1] == 0x91) {
+      text.replace(i, 2, "е");
+    }
+  }
+}
 
 std::string ToLower(const std::string& input) {
   std::string result;
