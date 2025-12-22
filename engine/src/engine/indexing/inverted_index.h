@@ -16,7 +16,9 @@ class InvertedIndex {
   InvertedIndex();
 
   void AddDocument(DocID doc_id, const std::vector<std::string>& terms);
-  PostingList GetPostings(const std::string& term) const;
+  void BuildSkips();
+
+  const CompressedPostingList& GetPostings(const std::string& term) const;
   size_t GetDocsCount() const;
   uint32_t GetDocLength(DocID doc_id) const;
 

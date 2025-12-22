@@ -9,4 +9,5 @@ target_sources(engine PRIVATE
 
 # Testing
 target_sources(search-unittests PRIVATE
-    posting_list_test.cpp)
+    posting_list_test.cpp
+    compressed_posting_list_test.cpp)

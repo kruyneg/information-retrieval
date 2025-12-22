@@ -22,12 +22,21 @@ void InvertedIndex::AddDocument(DocID doc_id,
   }
 }
 
-PostingList InvertedIndex::GetPostings(const std::string& term) const {
+void InvertedIndex::BuildSkips() {
+  for (auto& [_, list] : index_) {
+    list.BuildSkips();
+  }
+}
+
+const CompressedPostingList& InvertedIndex::GetPostings(
+    const std::string& term) const {
+  static CompressedPostingList empty;
+
   auto itr = index_.find(term);
   if (itr != index_.end()) {
-    return itr->second.Decompress();
+    return itr->second;
   }
-  return {};
+  return empty;
 }
 
 size_t InvertedIndex::GetDocsCount() const { return doc_lengths_.size(); }

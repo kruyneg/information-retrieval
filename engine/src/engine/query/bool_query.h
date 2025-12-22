@@ -10,7 +10,7 @@ class Preprocessor;
 }
 namespace indexing {
 class InvertedIndex;
-class PostingList;
+class CompressedPostingList;
 }  // namespace indexing
 
 namespace query {
@@ -22,7 +22,7 @@ class BoolQuery {
 
   explicit BoolQuery(std::unique_ptr<ASTNode>&& tree);
 
-  indexing::PostingList Execute(const indexing::InvertedIndex& index);
+  indexing::CompressedPostingList Execute(const indexing::InvertedIndex& index);
 
  private:
   std::unique_ptr<ASTNode> tree_;

@@ -72,8 +72,8 @@ std::unique_ptr<query::ASTNode> BuildAST(
   return std::move(node_stack.top());
 }
 
-indexing::PostingList ExecuteAST(const query::ASTNode& node,
-                                 const indexing::InvertedIndex& index) {
+indexing::CompressedPostingList ExecuteAST(
+    const query::ASTNode& node, const indexing::InvertedIndex& index) {
   switch (node.type) {
     case query::NodeType::kTerm: {
       return index.GetPostings(node.term);
@@ -134,7 +134,8 @@ BoolQuery BoolQuery::Parse(const std::string& query,
 BoolQuery::BoolQuery(std::unique_ptr<query::ASTNode>&& ast)
     : tree_(std::move(ast)) {}
 
-indexing::PostingList BoolQuery::Execute(const indexing::InvertedIndex& index) {
+indexing::CompressedPostingList BoolQuery::Execute(
+    const indexing::InvertedIndex& index) {
   return ExecuteAST(*tree_, index);
 }
 

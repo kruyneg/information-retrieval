@@ -19,6 +19,9 @@ void FileIndexStorage::SaveIndex(const indexing::InvertedIndex& index) {
     file_.write(reinterpret_cast<const char*>(&term_size), sizeof(term_size));
     file_.write(reinterpret_cast<const char*>(term.data()), term_size);
 
+    const auto list_size = posting_list.size();
+    file_.write(reinterpret_cast<const char*>(&list_size), sizeof(list_size));
+
     const auto buf_size = posting_list.buffer_.size();
     file_.write(reinterpret_cast<const char*>(&buf_size), sizeof(buf_size));
     file_.write(reinterpret_cast<const char*>(posting_list.buffer_.data()),
@@ -51,13 +54,19 @@ indexing::InvertedIndex FileIndexStorage::LoadIndex() {
     std::string term(term_size, '\0');
     file_.read(reinterpret_cast<char*>(term.data()), term_size);
 
+    size_t list_size;
+    file_.read(reinterpret_cast<char*>(&list_size), sizeof(list_size));
+
     size_t buf_size;
     file_.read(reinterpret_cast<char*>(&buf_size), sizeof(buf_size));
+
     indexing::CompressedPostingList posting_list;
+    posting_list.size_ = list_size;
     posting_list.buffer_.resize(buf_size);
     file_.read(reinterpret_cast<char*>(posting_list.buffer_.data()), buf_size);
     index.index_[std::move(term)] = std::move(posting_list);
   }
+  index.BuildSkips();
 
   size_t docs_count;
   file_.read(reinterpret_cast<char*>(&docs_count), sizeof(docs_count));

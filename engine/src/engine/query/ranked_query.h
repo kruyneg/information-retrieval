@@ -12,7 +12,6 @@ class Preprocessor;
 }
 namespace indexing {
 class InvertedIndex;
-class PostingList;
 }  // namespace indexing
 
 namespace query {

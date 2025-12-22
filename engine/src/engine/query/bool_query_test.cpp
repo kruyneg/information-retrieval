@@ -35,26 +35,26 @@ TEST_F(BoolQueryTest, OneWordQuery) {
   auto q = BoolQuery::Parse("text", preprocessor);
   const auto list = q.Execute(index);
   const std::vector<indexing::DocID> expected{0, 1, 2};
-  EXPECT_EQ(list.docs(), expected);
+  EXPECT_EQ(list.Decompress().docs(), expected);
 }
 
 TEST_F(BoolQueryTest, AndQuery) {
   auto q = BoolQuery::Parse("text & simple", preprocessor);
   const auto list = q.Execute(index);
   const std::vector<indexing::DocID> expected{0, 2};
-  EXPECT_EQ(list.docs(), expected);
+  EXPECT_EQ(list.Decompress().docs(), expected);
 }
 
 TEST_F(BoolQueryTest, OrQuery) {
   auto q = BoolQuery::Parse("text | world", preprocessor);
   const auto list = q.Execute(index);
   const std::vector<indexing::DocID> expected{0, 1, 2, 3};
-  EXPECT_EQ(list.docs(), expected);
+  EXPECT_EQ(list.Decompress().docs(), expected);
 }
 
 TEST_F(BoolQueryTest, ComplexQuery) {
   auto q = BoolQuery::Parse("hello | simple & text", preprocessor);
   const auto list = q.Execute(index);
   const std::vector<indexing::DocID> expected{0, 2, 3};
-  EXPECT_EQ(list.docs(), expected);
+  EXPECT_EQ(list.Decompress().docs(), expected);
 }

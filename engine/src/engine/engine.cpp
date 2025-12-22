@@ -40,7 +40,7 @@ void Engine::BuildIndex() {
       std::cout << "\rprocessed " << docs_num << " documents..." << std::flush;
     }
   }
-
+  index_.BuildSkips();
   index_storage_->SaveIndex(index_);
 
   std::cout << "\nIndex saved, processed " << docs_num << " documents"
@@ -54,8 +54,14 @@ std::vector<storage::Document> Engine::SearchBoolean(
   auto query = query::BoolQuery::Parse(query_text, preprocessor_);
   const auto posting_list = query.Execute(index_);
 
-  auto docs = posting_list.docs();
-  docs.resize(limit);
+  std::vector<indexing::DocID> docs;
+  docs.reserve(std::min(posting_list.size(), limit));
+  for (auto [doc_id, _] : posting_list) {
+    docs.push_back(doc_id);
+    if (docs.size() == limit) {
+      break;
+    }
+  }
   return GetDocsFromIDs(docs);
 }
 

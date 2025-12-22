@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "engine/indexing/inverted_index.h"
-#include "engine/indexing/posting_list.h"
+#include "engine/indexing/compressed_posting_list.h"
 #include "linguistics/preprocessor.h"
 
 namespace query {
@@ -28,14 +28,14 @@ std::vector<indexing::DocID> RankedQuery::Execute(
 
   for (const auto& [term, tf] : query_tf_) {
     const auto& posting_list = index.GetPostings(term);
-    const double idf = std::log((1.0 + index.GetDocsCount()) /
-                                (1.0 + posting_list.postings().size())) +
-                       1.0;
+    const double idf =
+        std::log((1.0 + index.GetDocsCount()) / (1.0 + posting_list.size())) +
+        1.0;
     const double query_tf_weight = 1.0 + std::log(tf);
     const double query_weight = query_tf_weight * idf;
     query_norm += query_weight * query_weight;
 
-    for (const auto& posting : posting_list.postings()) {
+    for (const auto& posting : posting_list) {
       const double doc_tf_weight = 1.0 + std::log(posting.tf);
       const double doc_weight = doc_tf_weight * idf;
 
