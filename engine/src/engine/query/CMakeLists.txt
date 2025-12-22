@@ -5,3 +5,8 @@ target_sources(engine PRIVATE
     bool_query.cpp
     ranked_query.h
     ranked_query.cpp)
+
+# Testing
+target_sources(search-unittests PRIVATE
+    bool_query_test.cpp
+    ranked_query_test.cpp)

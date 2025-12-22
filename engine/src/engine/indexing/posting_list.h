@@ -12,6 +12,7 @@ class CompressedPostingList;
 class PostingList {
  public:
   PostingList();
+  explicit PostingList(std::vector<Posting>&& list);
 
   [[nodiscard]] std::vector<uint32_t> docs() const;
   [[nodiscard]] const std::vector<Posting>& postings() const;

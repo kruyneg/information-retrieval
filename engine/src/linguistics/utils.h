@@ -10,4 +10,6 @@ void NormalizeYo(std::string& text);
 
 std::string ToLower(const std::string& text);
 
+bool IsLetter(char16_t c);
+
 }  // namespace linguistics

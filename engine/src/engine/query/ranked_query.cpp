@@ -24,7 +24,6 @@ RankedQuery::RankedQuery(const std::vector<std::string>& terms) {
 std::vector<indexing::DocID> RankedQuery::Execute(
     const indexing::InvertedIndex& index) {
   std::unordered_map<indexing::DocID, double> doc_scores;
-  std::unordered_map<indexing::DocID, double> doc_norms;
   double query_norm = 0.0;
 
   for (const auto& [term, tf] : query_tf_) {
@@ -32,39 +31,48 @@ std::vector<indexing::DocID> RankedQuery::Execute(
     const double idf = std::log((1.0 + index.GetDocsCount()) /
                                 (1.0 + posting_list.postings().size())) +
                        1.0;
-    const double log_tf = 1.0 + std::log(tf);
-    const double query_weight = log_tf * idf;
+    const double query_tf_weight = 1.0 + std::log(tf);
+    const double query_weight = query_tf_weight * idf;
     query_norm += query_weight * query_weight;
 
     for (const auto& posting : posting_list.postings()) {
-      const double doc_log_tf = 1.0 + std::log(posting.tf);
-      const double doc_weight = doc_log_tf * idf;
+      const double doc_tf_weight = 1.0 + std::log(posting.tf);
+      const double doc_weight = doc_tf_weight * idf;
+
       doc_scores[posting.doc_id] += doc_weight * query_weight;
-      doc_norms[posting.doc_id] += doc_weight * doc_weight;
     }
   }
 
   query_norm = std::sqrt(query_norm);
+  if (query_norm == 0.0) {
+    return {};
+  }
 
   std::vector<std::pair<indexing::DocID, double>> ranked;
   ranked.reserve(doc_scores.size());
 
   for (const auto& [doc_id, score] : doc_scores) {
-    const double doc_norm = std::sqrt(doc_norms[doc_id]);
-    if (doc_norm == 0.0 || query_norm == 0.0) {
+    const double doc_length = index.GetDocLength(doc_id);
+    if (doc_length == 0.0) {
       continue;
     }
+    const double doc_norm = std::sqrt(doc_length);
     const double normalized_score = score / (doc_norm * query_norm);
+
     ranked.emplace_back(doc_id, normalized_score);
   }
 
-  std::sort(ranked.begin(), ranked.end(),
-            [](const auto& a, const auto& b) { return a.second > b.second; });
+  std::sort(ranked.begin(), ranked.end(), [](const auto& a, const auto& b) {
+    if (a.second != b.second) {
+      return a.second > b.second;
+    }
+    return a.first < b.first;
+  });
 
   std::vector<indexing::DocID> result;
   result.reserve(ranked.size());
-  for (auto& [doc_id, _] : ranked) {
-    result.push_back(std::move(doc_id));
+  for (const auto& [doc_id, _] : ranked) {
+    result.push_back(doc_id);
   }
   return result;
 }

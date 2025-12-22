@@ -2,6 +2,8 @@
 
 #include <wctype.h>
 
+#include "linguistics/utils.h"
+
 namespace linguistics {
 
 bool FileRule::Match(const std::u16string& text, size_t pos) const {
@@ -11,11 +13,11 @@ bool FileRule::Match(const std::u16string& text, size_t pos) const {
     return true;
   }
   if (pos + 3 < text.size() && c == u'.' &&
-      (text[pos + 1] == u'.' ||
+      (text[pos + 1] == u'/' ||
        (text[pos + 1] == u'.' && text[pos + 2] == u'/'))) {
     return true;
   }
-  if (pos + 2 < text.size() && iswalpha(c) && text[pos + 1] == u':' &&
+  if (pos + 2 < text.size() && IsLetter(c) && text[pos + 1] == u':' &&
       (text[pos + 2] == u'\\' || text[pos + 2] == u'/')) {
     return true;
   }

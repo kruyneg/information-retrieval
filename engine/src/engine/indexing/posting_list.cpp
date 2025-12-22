@@ -6,6 +6,9 @@ namespace indexing {
 
 PostingList::PostingList() = default;
 
+PostingList::PostingList(std::vector<Posting>&& list)
+    : list_(std::move(list)) {}
+
 [[nodiscard]] std::vector<uint32_t> PostingList::docs() const {
   std::vector<uint32_t> result;
   result.reserve(list_.size());
@@ -64,7 +67,7 @@ PostingList PostingList::Merge(const PostingList& other) const {
 PostingList PostingList::Substract(const PostingList& other) const {
   PostingList result;
 
-  for (size_t i = 0, j = 0; j < other.list_.size();) {
+  for (size_t i = 0, j = 0; i < list_.size();) {
     if (j == other.list_.size()) {
       result.list_.push_back({list_[i].doc_id, 0});
       ++i;

@@ -6,3 +6,7 @@ target_sources(engine PRIVATE
     inverted_index.cpp
     compressed_posting_list.h
     compressed_posting_list.cpp)
+
+# Testing
+target_sources(search-unittests PRIVATE
+    posting_list_test.cpp)

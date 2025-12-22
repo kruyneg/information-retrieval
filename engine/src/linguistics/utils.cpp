@@ -71,4 +71,10 @@ std::string ToLower(const std::string& input) {
 
   return result;
 }
+
+bool IsLetter(char16_t c) {
+  return (c >= u'A' && c <= u'Z') || (c >= u'a' && c <= u'z') ||
+         (c >= u'А' && c <= u'Я') || (c >= u'а' && c <= u'я');
+}
+
 }  // namespace linguistics

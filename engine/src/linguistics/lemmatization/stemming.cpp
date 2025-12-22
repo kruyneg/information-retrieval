@@ -1,6 +1,9 @@
 #include "linguistics/lemmatization/stemming.h"
 
+#include <algorithm>
 #include <vector>
+
+#include "linguistics/utils.h"
 
 namespace {
 
@@ -80,12 +83,7 @@ std::string StemRu(const std::string& word) {
 
   auto result = word;
 
-  for (size_t i = 0; i + 1 < result.size(); ++i) {
-    if ((unsigned char)result[i] == 0xD1 &&
-        (unsigned char)result[i + 1] == 0x91) {
-      result.replace(i, 2, "е");
-    }
-  }
+  NormalizeYo(result);
 
   static const std::vector<std::string> noun = {
       "иями", "ями", "ами", "иях", "ях", "ах", "ов", "ев", "ей", "ия",
@@ -97,23 +95,15 @@ std::string StemRu(const std::string& word) {
       "ал",    "ала",   "али",   "ло",   "ли",    "л"};
 
   static const std::vector<std::string> adj = {
-      "ейший", "ейше", "ей", "ая", "ое", "ые", "ий", "ый", "ого", "ему"};
+      "ейший", "ейше", "ей", "ая", "ое", "ой", "ые", "ий", "ый", "ого", "ему"};
 
-  for (const auto& suf : noun) {
-    if (EndsWith(result, suf)) {
-      result.resize(result.size() - suf.size());
-      return result;
-    }
-  }
+  auto sufs = noun;
+  sufs.insert(sufs.end(), verb.begin(), verb.end());
+  sufs.insert(sufs.end(), adj.begin(), adj.end());
+  std::sort(sufs.begin(), sufs.end(),
+            [](const auto& a, const auto& b) { return a.size() > b.size(); });
 
-  for (const auto& suf : verb) {
-    if (EndsWith(result, suf)) {
-      result.resize(result.size() - suf.size());
-      return result;
-    }
-  }
-
-  for (const auto& suf : adj) {
+  for (const auto& suf : sufs) {
     if (EndsWith(result, suf)) {
       result.resize(result.size() - suf.size());
       return result;
@@ -165,13 +155,12 @@ std::string StemEn(const std::string& word) {
     } else if (Measure(s) == 1 && EndsWithCvc(s)) {
       s.push_back('e');
     }
+  } else {
+    // Step 1c
+    if (EndsWith(s, "y") && ContainsVowel(s.substr(0, s.size() - 1))) {
+      s[s.size() - 1] = 'i';
+    }
   }
-
-  // Step 1c
-  if (EndsWith(s, "y") && ContainsVowel(s.substr(0, s.size() - 1))) {
-    s[s.size() - 1] = 'i';
-  }
-
   return s;
 }
 

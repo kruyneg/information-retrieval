@@ -16,4 +16,6 @@ include_directories(/usr/include/bsoncxx/v_noabi)
 set(PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${PROJECT_INCLUDE_DIR})
 
+enable_testing()
+
 add_subdirectory(src)

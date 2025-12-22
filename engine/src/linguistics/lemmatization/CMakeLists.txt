@@ -6,3 +6,7 @@ target_sources(linguistics PUBLIC
     stemming.cpp
     dict_lemmatizer.h
     dict_lemmatizer.cpp)
+
+# Testing
+target_sources(search-unittests PRIVATE
+    stemming_test.cpp)
