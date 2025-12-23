@@ -15,7 +15,32 @@ class PostingList;
 
 class CompressedPostingList {
  public:
-  class Iterator {
+  class CoordIterator {
+   public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = uint32_t;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const uint32_t*;
+    using reference = const uint32_t&;
+
+    CoordIterator(const CompressedPostingList* list, uint32_t size, size_t idx);
+
+    reference operator*() const;
+
+    CoordIterator& operator++();
+    CoordIterator operator++(int);
+
+    bool IsEnd() const;
+
+   private:
+    const CompressedPostingList* list_ = nullptr;
+    uint32_t tf_ = 0;
+    size_t byte_idx_ = 0;
+    uint32_t pos_idx_ = 0;
+    uint32_t current_;
+  };
+
+  class DocIterator {
    public:
     using iterator_category = std::input_iterator_tag;
     using value_type = Posting;
@@ -23,29 +48,32 @@ class CompressedPostingList {
     using pointer = const Posting*;
     using reference = const Posting&;
 
-    explicit Iterator(const CompressedPostingList* list = nullptr);
+    explicit DocIterator(const CompressedPostingList* list = nullptr);
 
     reference operator*() const;
     pointer operator->() const;
 
-    Iterator& operator++();
-    Iterator operator++(int);
+    CoordIterator GetCoordItr() const;
 
-    bool operator==(const Iterator& other) const;
-    bool operator!=(const Iterator& other) const;
+    DocIterator& operator++();
+    DocIterator operator++(int);
+
+    bool operator==(const DocIterator& other) const;
+    bool operator!=(const DocIterator& other) const;
 
     void SkipTo(DocID target);
 
-   private:
     bool IsEnd() const;
 
+   private:
     const CompressedPostingList* list_ = nullptr;
     size_t byte_idx_ = 0;
+    size_t coord_idx_ = 0;
     size_t skip_idx_ = 0;
     Posting current_;
   };
 
-  void Add(DocID doc_id, uint32_t tf);
+  void Add(DocID doc_id, const std::vector<uint32_t>& coords);
 
   PostingList Decompress() const;
 
@@ -59,8 +87,8 @@ class CompressedPostingList {
   CompressedPostingList operator&(const CompressedPostingList& other) const;
   CompressedPostingList operator|(const CompressedPostingList& other) const;
 
-  Iterator begin() const;
-  Iterator end() const;
+  DocIterator begin() const;
+  DocIterator end() const;
 
  private:
   friend class storage::FileIndexStorage;
@@ -70,13 +98,17 @@ class CompressedPostingList {
     size_t offset;
   };
 
-  void VByteEncode(uint32_t value);
-  uint32_t VByteDecode(size_t& idx) const;
+  void VByteEncodeDoc(uint32_t value);
+  uint32_t VByteDecodeDoc(size_t& idx) const;
+  void VByteEncodeCoord(uint32_t value);
+  uint32_t VByteDecodeCoord(size_t& idx) const;
 
   std::vector<Skip> skips_;
   size_t skip_step_;
 
-  std::vector<uint8_t> buffer_;
+  std::vector<uint8_t> doc_buffer_;
+  std::vector<uint8_t> coord_buffer_;
+
   size_t size_ = 0;
   uint32_t last_doc_id_ = 0;
 };

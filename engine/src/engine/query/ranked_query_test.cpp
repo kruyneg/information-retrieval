@@ -71,3 +71,10 @@ TEST_F(RankedQueryTest, UnknownTermReturnsEmpty) {
   const auto results = q.Execute(index);
   EXPECT_TRUE(results.empty());
 }
+
+TEST_F(RankedQueryTest, PhraseQuery) {
+  auto q = RankedQuery::Parse("\"complex text\" another", preprocessor);
+  const auto results = q.Execute(index);
+  const std::vector<indexing::DocID> expected{1};
+  EXPECT_EQ(results, expected);
+}

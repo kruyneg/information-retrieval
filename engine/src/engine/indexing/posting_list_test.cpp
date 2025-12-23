@@ -38,10 +38,10 @@ TEST(PostingListTest, Substract) {
 
 TEST(PostingListTest, Decompression) {
   CompressedPostingList compressed;
-  compressed.Add(1, 2);
-  compressed.Add(3, 1);
-  compressed.Add(4, 1);
-  compressed.Add(5, 5);
+  compressed.Add(1, {1, 2});
+  compressed.Add(3, {1});
+  compressed.Add(4, {1});
+  compressed.Add(5, {2, 4, 6, 8, 10});
 
   const auto list = compressed.Decompress();
   const std::vector<Posting> expected{{1, 2}, {3, 1}, {4, 1}, {5, 5}};

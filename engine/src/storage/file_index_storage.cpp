@@ -22,10 +22,18 @@ void FileIndexStorage::SaveIndex(const indexing::InvertedIndex& index) {
     const auto list_size = posting_list.size();
     file_.write(reinterpret_cast<const char*>(&list_size), sizeof(list_size));
 
-    const auto buf_size = posting_list.buffer_.size();
-    file_.write(reinterpret_cast<const char*>(&buf_size), sizeof(buf_size));
-    file_.write(reinterpret_cast<const char*>(posting_list.buffer_.data()),
-                buf_size);
+    const auto doc_buf_size = posting_list.doc_buffer_.size();
+    file_.write(reinterpret_cast<const char*>(&doc_buf_size),
+                sizeof(doc_buf_size));
+    file_.write(reinterpret_cast<const char*>(posting_list.doc_buffer_.data()),
+                doc_buf_size);
+
+    const auto coord_buf_size = posting_list.coord_buffer_.size();
+    file_.write(reinterpret_cast<const char*>(&coord_buf_size),
+                sizeof(coord_buf_size));
+    file_.write(
+        reinterpret_cast<const char*>(posting_list.coord_buffer_.data()),
+        coord_buf_size);
   }
 
   const auto docs_count = index.doc_lengths_.size();
@@ -54,16 +62,27 @@ indexing::InvertedIndex FileIndexStorage::LoadIndex() {
     std::string term(term_size, '\0');
     file_.read(reinterpret_cast<char*>(term.data()), term_size);
 
+    indexing::CompressedPostingList posting_list;
+
     size_t list_size;
     file_.read(reinterpret_cast<char*>(&list_size), sizeof(list_size));
-
-    size_t buf_size;
-    file_.read(reinterpret_cast<char*>(&buf_size), sizeof(buf_size));
-
-    indexing::CompressedPostingList posting_list;
     posting_list.size_ = list_size;
-    posting_list.buffer_.resize(buf_size);
-    file_.read(reinterpret_cast<char*>(posting_list.buffer_.data()), buf_size);
+
+    size_t doc_buf_size;
+    file_.read(reinterpret_cast<char*>(&doc_buf_size), sizeof(doc_buf_size));
+    posting_list.doc_buffer_.resize(doc_buf_size);
+
+    file_.read(reinterpret_cast<char*>(posting_list.doc_buffer_.data()),
+               doc_buf_size);
+
+    size_t coord_buf_size;
+    file_.read(reinterpret_cast<char*>(&coord_buf_size),
+               sizeof(coord_buf_size));
+    posting_list.coord_buffer_.resize(coord_buf_size);
+
+    file_.read(reinterpret_cast<char*>(posting_list.coord_buffer_.data()),
+               coord_buf_size);
+
     index.index_[std::move(term)] = std::move(posting_list);
   }
   index.BuildSkips();

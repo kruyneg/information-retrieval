@@ -4,9 +4,12 @@ target_sources(engine PRIVATE
     bool_query.h
     bool_query.cpp
     ranked_query.h
-    ranked_query.cpp)
+    ranked_query.cpp
+    phrase_query.h
+    phrase_query.cpp)
 
 # Testing
 target_sources(search-unittests PRIVATE
     bool_query_test.cpp
-    ranked_query_test.cpp)
+    ranked_query_test.cpp
+    phrase_query_test.cpp)

@@ -70,7 +70,9 @@ std::vector<storage::Document> Engine::SearchRanked(
   auto query = query::RankedQuery::Parse(query_text, preprocessor_);
   auto ranked_list = query.Execute(index_);
 
-  ranked_list.resize(limit);
+  if (ranked_list.size() > limit) {
+    ranked_list.resize(limit);
+  }
   return GetDocsFromIDs(ranked_list);
 }
 

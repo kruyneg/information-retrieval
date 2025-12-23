@@ -12,6 +12,8 @@ NodeType GetTermType(const std::string& term) {
   } else if (lower_term == "or" || lower_term == "или" || lower_term == "|" ||
              lower_term == "||") {
     return NodeType::kOr;
+  } else if (lower_term.front() == '"' && lower_term.back() == '"') {
+    return NodeType::kPhrase;
   }
   return NodeType::kTerm;
 }
@@ -19,7 +21,15 @@ NodeType GetTermType(const std::string& term) {
 std::unique_ptr<ASTNode> ASTNode::MakeTerm(const std::string& term) {
   auto node = std::make_unique<ASTNode>();
   node->type = NodeType::kTerm;
-  node->term = term;
+  node->terms = {term};
+  return node;
+}
+
+std::unique_ptr<ASTNode> ASTNode::MakePhrase(
+    const std::vector<std::string>& phrase) {
+  auto node = std::make_unique<ASTNode>();
+  node->type = NodeType::kPhrase;
+  node->terms = phrase;
   return node;
 }
 

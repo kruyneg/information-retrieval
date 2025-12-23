@@ -21,11 +21,13 @@ class RankedQuery {
   static RankedQuery Parse(const std::string& query,
                            const linguistics::Preprocessor& preprocessor);
 
-  explicit RankedQuery(const std::vector<std::string>& terms);
+  explicit RankedQuery(const std::vector<std::string>& terms,
+                       const std::vector<std::vector<std::string>>& phrases);
 
   std::vector<indexing::DocID> Execute(const indexing::InvertedIndex& index);
 
  private:
+  std::vector<std::vector<std::string>> phrases_;
   std::unordered_map<std::string, uint32_t> query_tf_;
 };
 

@@ -2,11 +2,13 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace query {
 
 enum class NodeType {
   kTerm,
+  kPhrase,
   kAnd,
   kOr,
 };
@@ -15,13 +17,15 @@ NodeType GetTermType(const std::string& term);
 
 struct ASTNode {
   static std::unique_ptr<ASTNode> MakeTerm(const std::string& term);
+  static std::unique_ptr<ASTNode> MakePhrase(
+      const std::vector<std::string>& phrase);
   static std::unique_ptr<ASTNode> MakeAnd(std::unique_ptr<ASTNode> left,
                                           std::unique_ptr<ASTNode> right);
   static std::unique_ptr<ASTNode> MakeOr(std::unique_ptr<ASTNode> left,
                                          std::unique_ptr<ASTNode> right);
 
   NodeType type;
-  std::string term;
+  std::vector<std::string> terms;
   std::unique_ptr<ASTNode> left;
   std::unique_ptr<ASTNode> right;
 };

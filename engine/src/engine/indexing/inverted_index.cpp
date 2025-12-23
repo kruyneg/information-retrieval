@@ -12,13 +12,13 @@ void InvertedIndex::AddDocument(DocID doc_id,
                                 const std::vector<std::string>& terms) {
   doc_lengths_[doc_id] = terms.size();
 
-  std::unordered_map<std::string, uint32_t> term_counts;
-  for (const auto& term : terms) {
-    term_counts[term]++;
+  std::unordered_map<std::string, std::vector<uint32_t>> term_coords;
+  for (uint32_t i = 0; i < terms.size(); ++i) {
+    term_coords[terms[i]].push_back(i);
   }
 
-  for (auto& [term, tf] : term_counts) {
-    index_[std::move(term)].Add(doc_id, tf);
+  for (auto& [term, coords] : term_coords) {
+    index_[std::move(term)].Add(doc_id, std::move(coords));
   }
 }
 

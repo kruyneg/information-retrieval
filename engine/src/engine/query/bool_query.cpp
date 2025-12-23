@@ -5,12 +5,14 @@
 
 #include "engine/indexing/inverted_index.h"
 #include "engine/indexing/posting_list.h"
+#include "engine/query/phrase_query.h"
 #include "linguistics/preprocessor.h"
 
 namespace {
 
 std::unique_ptr<query::ASTNode> BuildAST(
-    const std::vector<std::string>& tokens) {
+    std::vector<std::string>& tokens,
+    const linguistics::Preprocessor& preprocessor) {
   std::stack<std::unique_ptr<query::ASTNode>> node_stack;
   std::stack<char> op_stack;
 
@@ -31,7 +33,7 @@ std::unique_ptr<query::ASTNode> BuildAST(
     }
   };
 
-  for (const auto& token : tokens) {
+  for (auto& token : tokens) {
     const auto type = query::GetTermType(token);
     if (token == "(") {
       op_stack.push('(');
@@ -44,7 +46,11 @@ std::unique_ptr<query::ASTNode> BuildAST(
         throw std::runtime_error("BuildAST: ')' without '('");
       }
     } else if (type == query::NodeType::kTerm) {
+      token = preprocessor.Lemmatize(std::move(token));
       node_stack.push(query::ASTNode::MakeTerm(token));
+    } else if (type == query::NodeType::kPhrase) {
+      node_stack.push(
+          query::ASTNode::MakePhrase(preprocessor.Preprocess(token)));
     } else if (type == query::NodeType::kAnd) {
       while (!op_stack.empty() && op_stack.top() == '&') {
         apply_op(op_stack.top());
@@ -76,7 +82,10 @@ indexing::CompressedPostingList ExecuteAST(
     const query::ASTNode& node, const indexing::InvertedIndex& index) {
   switch (node.type) {
     case query::NodeType::kTerm: {
-      return index.GetPostings(node.term);
+      return index.GetPostings(node.terms.front());
+    }
+    case query::NodeType::kPhrase: {
+      return query::ExecutePhraseQuery(node.terms, index);
     }
     case query::NodeType::kAnd: {
       return ExecuteAST(*node.left, index) & ExecuteAST(*node.right, index);
@@ -98,8 +107,17 @@ BoolQuery BoolQuery::Parse(const std::string& query,
                            const linguistics::Preprocessor& preprocessor) {
   std::vector<std::string> raw_tokens;
   std::string buffer;
+  bool in_phrase = false;
   for (char c : query) {
-    if (std::isspace(c)) {
+    if (c == '"') {
+      if (in_phrase) {
+        raw_tokens.push_back('"' + buffer + '"');
+        buffer.clear();
+      }
+      in_phrase = !in_phrase;
+    } else if (in_phrase) {
+      buffer.push_back(c);
+    } else if (std::isspace(c)) {
       if (!buffer.empty()) {
         raw_tokens.push_back(buffer);
         buffer.clear();
@@ -118,17 +136,7 @@ BoolQuery BoolQuery::Parse(const std::string& query,
     raw_tokens.push_back(buffer);
   }
 
-  std::vector<std::string> tokens;
-  for (const auto& token : raw_tokens) {
-    if (GetTermType(token) != NodeType::kTerm || token == "(" || token == ")") {
-      tokens.push_back(token);
-    } else {
-      auto processed = preprocessor.Lemmatize(token);
-      tokens.push_back(processed);
-    }
-  }
-
-  return BoolQuery(BuildAST(tokens));
+  return BoolQuery(BuildAST(raw_tokens, preprocessor));
 }
 
 BoolQuery::BoolQuery(std::unique_ptr<query::ASTNode>&& ast)

@@ -18,7 +18,7 @@ class BoolQueryTest : public testing::Test {
     std::vector<std::vector<std::string>> docs{
         {"simple", "text"},
         {"very", "complex", "text"},
-        {"another", "simple", "text"},
+        {"simple", "another", "text"},
         {"hello", "world"},
     };
     for (indexing::DocID i = 0; i < docs.size(); ++i) {
@@ -56,5 +56,12 @@ TEST_F(BoolQueryTest, ComplexQuery) {
   auto q = BoolQuery::Parse("hello | simple & text", preprocessor);
   const auto list = q.Execute(index);
   const std::vector<indexing::DocID> expected{0, 2, 3};
+  EXPECT_EQ(list.Decompress().docs(), expected);
+}
+
+TEST_F(BoolQueryTest, PhraseQuery) {
+  auto q = BoolQuery::Parse("hello | \"simple text\"", preprocessor);
+  const auto list = q.Execute(index);
+  const std::vector<indexing::DocID> expected{0, 3};
   EXPECT_EQ(list.Decompress().docs(), expected);
 }
