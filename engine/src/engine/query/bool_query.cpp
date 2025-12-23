@@ -45,6 +45,7 @@ std::unique_ptr<query::ASTNode> BuildAST(
       if (op_stack.empty()) {
         throw std::runtime_error("BuildAST: ')' without '('");
       }
+      op_stack.pop();
     } else if (type == query::NodeType::kTerm) {
       token = preprocessor.Lemmatize(std::move(token));
       node_stack.push(query::ASTNode::MakeTerm(token));
@@ -58,13 +59,14 @@ std::unique_ptr<query::ASTNode> BuildAST(
       }
       op_stack.push('&');
     } else {
-      while (!op_stack.empty()) {
+      while (!op_stack.empty() && op_stack.top() != '(') {
         apply_op(op_stack.top());
         op_stack.pop();
       }
       op_stack.push('|');
     }
   }
+
   while (!op_stack.empty()) {
     if (op_stack.top() == '(') {
       throw std::runtime_error("BuildAST: '(' without ')'");
@@ -72,12 +74,16 @@ std::unique_ptr<query::ASTNode> BuildAST(
     apply_op(op_stack.top());
     op_stack.pop();
   }
+
   if (node_stack.size() != 1) {
+    if (node_stack.empty()) {
+      return nullptr;
+    }
     throw std::runtime_error("BuildAST: leftover nodes in stack");
   }
+
   return std::move(node_stack.top());
 }
-
 indexing::CompressedPostingList ExecuteAST(
     const query::ASTNode& node, const indexing::InvertedIndex& index) {
   switch (node.type) {
@@ -144,6 +150,9 @@ BoolQuery::BoolQuery(std::unique_ptr<query::ASTNode>&& ast)
 
 indexing::CompressedPostingList BoolQuery::Execute(
     const indexing::InvertedIndex& index) {
+  if (!tree_) {
+    return {};
+  }
   return ExecuteAST(*tree_, index);
 }
 

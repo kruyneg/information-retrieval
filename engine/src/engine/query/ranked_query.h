@@ -2,10 +2,10 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "engine/indexing/types.h"
+#include "utils/hash_table.h"
 
 namespace linguistics {
 class Preprocessor;
@@ -28,7 +28,7 @@ class RankedQuery {
 
  private:
   std::vector<std::vector<std::string>> phrases_;
-  std::unordered_map<std::string, uint32_t> query_tf_;
+  utils::HashTable<uint32_t> query_tf_;
 };
 
 }  // namespace query

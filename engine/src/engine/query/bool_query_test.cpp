@@ -65,3 +65,16 @@ TEST_F(BoolQueryTest, PhraseQuery) {
   const std::vector<indexing::DocID> expected{0, 3};
   EXPECT_EQ(list.Decompress().docs(), expected);
 }
+
+TEST_F(BoolQueryTest, QueryWithParentheses) {
+  auto q = BoolQuery::Parse("text & (complex | simple)", preprocessor);
+  const auto list = q.Execute(index);
+  const std::vector<indexing::DocID> expected{0, 1, 2};
+  EXPECT_EQ(list.Decompress().docs(), expected);
+}
+
+TEST_F(BoolQueryTest, EmptyQuery) {
+  auto q = BoolQuery::Parse("", preprocessor);
+  const auto list = q.Execute(index);
+  EXPECT_TRUE(list.size() == 0);
+}

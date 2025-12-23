@@ -38,10 +38,8 @@ void FileIndexStorage::SaveIndex(const indexing::InvertedIndex& index) {
 
   const auto docs_count = index.doc_lengths_.size();
   file_.write(reinterpret_cast<const char*>(&docs_count), sizeof(docs_count));
-  for (const auto& [doc_id, length] : index.doc_lengths_) {
-    file_.write(reinterpret_cast<const char*>(&doc_id), sizeof(doc_id));
-    file_.write(reinterpret_cast<const char*>(&length), sizeof(length));
-  }
+  file_.write(reinterpret_cast<const char*>(index.doc_lengths_.data()),
+              sizeof(uint32_t) * docs_count);
   file_.flush();
   file_.seekg(0, std::ios::beg);
   file_.seekp(0, std::ios::beg);
@@ -89,12 +87,9 @@ indexing::InvertedIndex FileIndexStorage::LoadIndex() {
 
   size_t docs_count;
   file_.read(reinterpret_cast<char*>(&docs_count), sizeof(docs_count));
-  for (size_t i = 0; i < docs_count; ++i) {
-    uint32_t doc_id, length;
-    file_.read(reinterpret_cast<char*>(&doc_id), sizeof(doc_id));
-    file_.read(reinterpret_cast<char*>(&length), sizeof(length));
-    index.doc_lengths_[doc_id] = length;
-  }
+  index.doc_lengths_.resize(docs_count);
+  file_.read(reinterpret_cast<char*>(index.doc_lengths_.size()),
+             sizeof(uint32_t) * docs_count);
 
   file_.flush();
   file_.seekg(0, std::ios::beg);

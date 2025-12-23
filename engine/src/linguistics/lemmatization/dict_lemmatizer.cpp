@@ -63,8 +63,6 @@ void DictLemmatizer::LoadDict(const std::string& dict_path) {
       throw std::runtime_error("DictLemmatizer: corrupted bin header");
     }
 
-    dict_.reserve(count);
-
     for (uint32_t i = 0; i < count; ++i) {
       uint16_t wl = 0, ll = 0;
 

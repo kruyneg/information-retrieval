@@ -57,7 +57,7 @@ std::vector<indexing::DocID> RankedQuery::Execute(
   }
 
   for (const auto& [term, tf] : query_tf_) {
-    auto posting_list = index.GetPostings(term);
+    auto posting_list = index.GetPostings(std::string(term));
     if (!phrases_.empty()) {
       posting_list = posting_list & phrases_list;
     }

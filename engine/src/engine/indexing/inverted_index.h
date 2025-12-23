@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 
 #include "engine/indexing/compressed_posting_list.h"
+#include "utils/hash_table.h"
 
 namespace storage {
 class FileIndexStorage;
@@ -25,8 +25,8 @@ class InvertedIndex {
  private:
   friend class storage::FileIndexStorage;
 
-  std::unordered_map<std::string, CompressedPostingList> index_;
-  std::unordered_map<DocID, uint32_t> doc_lengths_;
+  utils::HashTable<CompressedPostingList> index_;
+  std::vector<uint32_t> doc_lengths_;
 };
 
 }  // namespace indexing

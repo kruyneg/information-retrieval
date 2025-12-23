@@ -1,9 +1,9 @@
 #pragma once
 
 #include <optional>
-#include <unordered_map>
 
 #include "linguistics/lemmatization/lemmatizer.h"
+#include "utils/hash_table.h"
 
 namespace linguistics {
 
@@ -22,7 +22,7 @@ class DictLemmatizer : public Lemmatizer {
  private:
   std::string Stem(const std::string& word) const;
 
-  std::unordered_map<std::string, std::string> dict_;
+  utils::HashTable<std::string> dict_;
 };
 
 }  // namespace linguistics

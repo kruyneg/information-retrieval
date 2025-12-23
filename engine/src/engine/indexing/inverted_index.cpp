@@ -10,9 +10,12 @@ InvertedIndex::InvertedIndex() = default;
 
 void InvertedIndex::AddDocument(DocID doc_id,
                                 const std::vector<std::string>& terms) {
+  if (doc_lengths_.size() <= doc_id) {
+    doc_lengths_.resize(doc_id + 1, 0);
+  }
   doc_lengths_[doc_id] = terms.size();
 
-  std::unordered_map<std::string, std::vector<uint32_t>> term_coords;
+  utils::HashTable<std::vector<uint32_t>> term_coords;
   for (uint32_t i = 0; i < terms.size(); ++i) {
     term_coords[terms[i]].push_back(i);
   }
@@ -42,11 +45,10 @@ const CompressedPostingList& InvertedIndex::GetPostings(
 size_t InvertedIndex::GetDocsCount() const { return doc_lengths_.size(); }
 
 u_int32_t InvertedIndex::GetDocLength(DocID doc_id) const {
-  auto itr = doc_lengths_.find(doc_id);
-  if (itr == doc_lengths_.end()) {
+  if (doc_lengths_.size() <= doc_id) {
     throw std::runtime_error("InvertedIndex: unknown document");
   }
-  return itr->second;
+  return doc_lengths_[doc_id];
 }
 
 }  // namespace indexing

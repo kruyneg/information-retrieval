@@ -81,6 +81,10 @@ std::optional<Document> MongoDocumentCursor::Next() {
     result.id = el.get_int32().value;
   }
 
+  if (result.id < 0) {
+    return std::nullopt;
+  }
+
   if (auto el = doc["url"]; el && el.type() == bsoncxx::type::k_string) {
     result.url = el.get_string().value;
   }
