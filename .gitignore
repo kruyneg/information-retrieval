@@ -6,3 +6,7 @@ __pycache__
 build/
 
 mongo_backup/
+
+*.aux
+*.log
+*.out
