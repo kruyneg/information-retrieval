@@ -20,12 +20,16 @@ class BoolQuery {
   static BoolQuery Parse(const std::string& query,
                          const linguistics::Preprocessor& preprocessor);
 
-  explicit BoolQuery(std::unique_ptr<ASTNode>&& tree);
+  explicit BoolQuery(std::unique_ptr<ASTNode>&& tree,
+                     std::vector<std::string>&& terms);
+
+  const std::vector<std::string>& terms() const;
 
   indexing::CompressedPostingList Execute(const indexing::InvertedIndex& index);
 
  private:
   std::unique_ptr<ASTNode> tree_;
+  std::vector<std::string> terms_;
 };
 
 }  // namespace query

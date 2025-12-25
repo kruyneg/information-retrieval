@@ -64,3 +64,15 @@ TEST_F(TokenizerTest, Utf8Text) {
   const std::vector<std::string> expected{"Простой", "текст"};
   EXPECT_EQ(res, expected);
 }
+
+TEST_F(TokenizerTest, NumberText) {
+  const auto res = tokenizer.Tokenize("10, 123.4. 123,4");
+  const std::vector<std::string> expected{"10", "123.4", "123.4"};
+  EXPECT_EQ(res, expected);
+}
+
+TEST_F(TokenizerTest, Abbreviation) {
+  const auto res = tokenizer.Tokenize("USA, U.S.A.! С.С.С.Р - СССР");
+  const std::vector<std::string> expected{"USA", "USA", "СССР", "СССР"};
+  EXPECT_EQ(res, expected);
+}

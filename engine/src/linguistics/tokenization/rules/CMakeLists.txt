@@ -5,6 +5,4 @@ target_sources(linguistics PRIVATE
     number_rule.h
     number_rule.cpp
     abbreviation_rule.h
-    abbreviation_rule.cpp
-    file_rule.h
-    file_rule.cpp)
+    abbreviation_rule.cpp)

@@ -41,6 +41,14 @@ RankedQuery::RankedQuery(const std::vector<std::string>& terms,
   }
 }
 
+std::vector<std::string> RankedQuery::terms() const {
+  std::vector<std::string> result;
+  for (const auto& [term, tf] : query_tf_) {
+    result.push_back(term);
+  }
+  return result;
+}
+
 std::vector<indexing::DocID> RankedQuery::Execute(
     const indexing::InvertedIndex& index) {
   std::unordered_map<indexing::DocID, double> doc_scores;

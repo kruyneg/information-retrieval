@@ -7,7 +7,7 @@ namespace linguistics {
 bool NumberRule::Match(const std::u16string& text, size_t pos) const {
   if (!iswdigit(text[pos])) {
     return false;
-  } else if (pos + 1 < text.size() && (text[pos] == '-' || text[pos] == '+') &&
+  } else if (pos + 1 < text.size() && (text[pos] == '-') &&
              !iswdigit(text[pos + 1])) {
     return false;
   }
@@ -25,9 +25,9 @@ std::u16string NumberRule::Extract(const std::u16string& text,
     wchar_t c = text[*pos];
     if (iswdigit(c)) {
       result.push_back(c);
-    } else if (c == u'.' && !has_dot && *pos + 1 < text.size() &&
+    } else if ((c == u'.' || c == u',') && !has_dot && *pos + 1 < text.size() &&
                iswdigit(text[*pos + 1])) {
-      result.push_back(c);
+      result.push_back(u'.');
     } else {
       break;
     }

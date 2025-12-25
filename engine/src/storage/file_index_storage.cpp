@@ -88,7 +88,7 @@ indexing::InvertedIndex FileIndexStorage::LoadIndex() {
   size_t docs_count;
   file_.read(reinterpret_cast<char*>(&docs_count), sizeof(docs_count));
   index.doc_lengths_.resize(docs_count);
-  file_.read(reinterpret_cast<char*>(index.doc_lengths_.size()),
+  file_.read(reinterpret_cast<char*>(index.doc_lengths_.data()),
              sizeof(uint32_t) * docs_count);
 
   file_.flush();

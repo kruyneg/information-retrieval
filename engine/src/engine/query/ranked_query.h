@@ -24,6 +24,8 @@ class RankedQuery {
   explicit RankedQuery(const std::vector<std::string>& terms,
                        const std::vector<std::vector<std::string>>& phrases);
 
+  std::vector<std::string> terms() const;
+
   std::vector<indexing::DocID> Execute(const indexing::InvertedIndex& index);
 
  private:

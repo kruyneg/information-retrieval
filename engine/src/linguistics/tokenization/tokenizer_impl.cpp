@@ -4,7 +4,6 @@
 #include <locale>
 
 #include "linguistics/tokenization/rules/abbreviation_rule.h"
-#include "linguistics/tokenization/rules/file_rule.h"
 #include "linguistics/tokenization/rules/number_rule.h"
 #include "linguistics/tokenization/rules/word_rule.h"
 
@@ -26,7 +25,6 @@ namespace linguistics {
 
 TokenizerImpl::TokenizerImpl() {
   rules_.emplace_back(std::make_unique<AbbreviationRule>());
-  rules_.emplace_back(std::make_unique<FileRule>());
   rules_.emplace_back(std::make_unique<NumberRule>());
   rules_.emplace_back(std::make_unique<WordRule>());
 }

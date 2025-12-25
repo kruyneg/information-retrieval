@@ -142,11 +142,24 @@ BoolQuery BoolQuery::Parse(const std::string& query,
     raw_tokens.push_back(buffer);
   }
 
-  return BoolQuery(BuildAST(raw_tokens, preprocessor));
+  std::vector<std::string> terms;
+  for (const auto& token : raw_tokens) {
+    const auto type = query::GetTermType(token);
+    if (type == query::NodeType::kTerm || type == query::NodeType::kPhrase) {
+      const auto prepared_token = preprocessor.Preprocess(token);
+      terms.insert(terms.end(), prepared_token.begin(), prepared_token.end());
+    }
+  }
+  terms.erase(std::unique(terms.begin(), terms.end()), terms.end());
+
+  return BoolQuery(BuildAST(raw_tokens, preprocessor), std::move(terms));
 }
 
-BoolQuery::BoolQuery(std::unique_ptr<query::ASTNode>&& ast)
-    : tree_(std::move(ast)) {}
+BoolQuery::BoolQuery(std::unique_ptr<query::ASTNode>&& ast,
+                     std::vector<std::string>&& terms)
+    : tree_(std::move(ast)), terms_(std::move(terms)) {}
+
+const std::vector<std::string>& BoolQuery::terms() const { return terms_; }
 
 indexing::CompressedPostingList BoolQuery::Execute(
     const indexing::InvertedIndex& index) {
